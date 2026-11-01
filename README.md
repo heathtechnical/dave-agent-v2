@@ -9,9 +9,6 @@ from the start, and a record of how each part was built.
 ## How changes get in
 
 - After the bootstrap commit, every change is a pull request, squash-merged.
-- Each pull request says what changed, whether AI wrote it, what was checked
-  and how it's tested (see `.github/pull_request_template.md`).
-- Significant decisions are recorded in `docs/decisions/` before the code.
 - Pushes to `main` are refused locally by `.githooks/pre-push`, and CI flags any
   commit on `main` that didn't come from a merged pull request.
 

@@ -1,6 +1,3 @@
-# Free GitHub plans can't enforce branch protection on a private repo, so this
-# records instead: any commit that reaches main without a merged pull request
-# fails this run and gets an issue opened for it.
 name: Provenance
 
 on:
