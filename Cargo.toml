@@ -1,0 +1,21 @@
+[package]
+name = "dave-agent"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+description = "DAVE agent: hygiene checks for Linux servers"
+
+[dependencies]
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+# The agent must never crash on bad input: no panicking shortcuts.
+unwrap_used = "deny"
+expect_used = "deny"
+indexing_slicing = "deny"
+panic = "deny"
+todo = "deny"
+dbg_macro = "deny"

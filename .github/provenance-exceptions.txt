@@ -1,0 +1,2 @@
+# Commits allowed on main without a pull request, one per line: <full sha> <reason>
+7f1c1ca6249cf0e7188683f1a394cd4f522b1324 Bootstrap commit, pushed before any pull request was possible

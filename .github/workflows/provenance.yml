@@ -1,0 +1,56 @@
+name: Provenance
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  check:
+    name: Every commit on main came from a pull request
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check commits in this push
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            commits="$AFTER"
+          else
+            commits=$(gh api "repos/$REPO/compare/$BEFORE...$AFTER" --jq '.commits[].sha')
+          fi
+          unreviewed=""
+          for sha in $commits; do
+            if grep -q "^$sha" .github/provenance-exceptions.txt; then
+              echo "$sha: listed exception"
+              continue
+            fi
+            merged=$(gh api "repos/$REPO/commits/$sha/pulls" --jq '[.[] | select(.merged_at != null)] | length')
+            if [ "$merged" -gt 0 ]; then
+              echo "$sha: from a merged pull request"
+            else
+              echo "::error::$sha reached main without a merged pull request"
+              unreviewed="$unreviewed $sha"
+            fi
+          done
+          if [ -n "$unreviewed" ]; then
+            body="These commits reached main without a merged pull request:"
+            for sha in $unreviewed; do body="$body
+          - $sha"; done
+            body="$body
+
+          Review them now and record the outcome here, or add them to .github/provenance-exceptions.txt with a reason."
+            gh issue create --repo "$REPO" --title "Unreviewed commits on main" --body "$body"
+            exit 1
+          fi
