@@ -1,14 +1,17 @@
 //! dave-agent: hygiene checks for Linux servers.
 
+mod logging;
+
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
+use tracing::debug;
 
 /// DAVE agent: hygiene checks for Linux servers.
 #[derive(Debug, Parser)]
 #[command(name = "dave-agent", version, about)]
 struct Cli {
-    /// Print debug output to stderr.
+    /// Emit debug-level diagnostics to stderr.
     #[arg(long, global = true)]
     debug: bool,
 
@@ -24,9 +27,10 @@ enum Command {
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
-    if cli.debug {
-        eprintln!("debug: {cli:?}");
+    if let Err(err) = logging::init(cli.debug) {
+        eprintln!("dave-agent: could not set up logging: {err}");
     }
+    debug!(?cli, "parsed arguments");
     match cli.command {
         Command::Run => run(),
     }
@@ -34,6 +38,7 @@ fn main() -> ExitCode {
 
 /// Stub: the checks are not implemented yet.
 fn run() -> ExitCode {
+    debug!("starting run");
     eprintln!("dave-agent: run is not implemented yet");
     ExitCode::FAILURE
 }
